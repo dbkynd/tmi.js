@@ -1,20 +1,20 @@
-var WebSocketServer = require('ws').Server;
-var tmi = require('../index.js');
+const WebSocketServer = require('ws').Server;
+const tmi = require('../index.js');
 
-var noop = function() {};
-var catchConnectError = err => {
+const noop = function() {};
+const catchConnectError = err => {
 	if(err !== 'Connection closed.') {
 		console.error(err);
 	}
 };
 
-var no_permission = '@msg-id=no_permission :tmi.twitch.tv NOTICE #local7000 :You don\'t have permission.';
-var msg_channel_suspended = '@msg-id=msg_channel_suspended :tmi.twitch.tv NOTICE #local7000 :This channel has been suspended.'
+const no_permission = '@msg-id=no_permission :tmi.twitch.tv NOTICE #local7000 :You don\'t have permission.';
+const msg_channel_suspended = '@msg-id=msg_channel_suspended :tmi.twitch.tv NOTICE #local7000 :This channel has been suspended.';
 
-var tests = [{
+const tests = [ {
 	command: 'ban',
-	inputParams: ['#local7000', 'baduser', 'some reason'],
-	returnedParams: ['#local7000', 'baduser', 'some reason'],
+	inputParams: [ '#local7000', 'baduser', 'some reason' ],
+	returnedParams: [ '#local7000', 'baduser', 'some reason' ],
 	serverTest: '/ban',
 	serverCommand: '@msg-id=ban_success :tmi.twitch.tv NOTICE #local7000 :baduser',
 	errorCommands: [
@@ -28,8 +28,8 @@ var tests = [{
 	]
 }, {
 	command: 'clear',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/clear',
 	serverCommand: ':tmi.twitch.tv CLEARCHAT',
 	errorCommands: [
@@ -39,8 +39,8 @@ var tests = [{
 	]
 }, {
 	command: 'color',
-	inputParams: ['#local7000', '#c0ffee'],
-	returnedParams: ['#c0ffee'],
+	inputParams: [ '#local7000', '#c0ffee' ],
+	returnedParams: [ '#c0ffee' ],
 	serverTest: '#c0ffee',
 	serverCommand: '@msg-id=color_changed :tmi.twitch.tv NOTICE #local7000 :#c0ffee',
 	errorCommands: [
@@ -49,14 +49,14 @@ var tests = [{
 	]
 }, {
 	command: 'color',
-	inputParams: ['#c0ffee'],
-	returnedParams: ['#c0ffee'],
+	inputParams: [ '#c0ffee' ],
+	returnedParams: [ '#c0ffee' ],
 	serverTest: '#c0ffee',
 	serverCommand: '@msg-id=color_changed :tmi.twitch.tv NOTICE #local7000 :#c0ffee'
 }, {
 	command: 'commercial',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000', 30],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000', 30 ],
 	serverTest: '/commercial',
 	serverCommand: '@msg-id=commercial_success :tmi.twitch.tv NOTICE #local7000 :30',
 	errorCommands: [
@@ -67,14 +67,14 @@ var tests = [{
 	]
 }, {
 	command: 'commercial',
-	inputParams: ['#local7000', 60],
-	returnedParams: ['#local7000', 60],
+	inputParams: [ '#local7000', 60 ],
+	returnedParams: [ '#local7000', 60 ],
 	serverTest: '/commercial',
 	serverCommand: '@msg-id=commercial_success :tmi.twitch.tv NOTICE #local7000 :60'
 }, {
 	command: 'emoteonly',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/emoteonly',
 	serverCommand: '@msg-id=emote_only_on :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -85,8 +85,8 @@ var tests = [{
 	]
 }, {
 	command: 'emoteonlyoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/emoteonlyoff',
 	serverCommand: '@msg-id=emote_only_off :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -97,8 +97,8 @@ var tests = [{
 	]
 }, {
 	command: 'host',
-	inputParams: ['#local7000', 'schmoopiie'],
-	returnedParams: ['#local7000', 'schmoopiie', 5],
+	inputParams: [ '#local7000', 'schmoopiie' ],
+	returnedParams: [ '#local7000', 'schmoopiie', 5 ],
 	serverTest: '/host',
 	serverCommand: '@msg-id=hosts_remaining :tmi.twitch.tv NOTICE #local7000 :5',
 	errorCommands: [
@@ -106,30 +106,30 @@ var tests = [{
 		'@msg-id=bad_host_hosting :tmi.twitch.tv NOTICE #local7000 :This channel is already hosting that channel.',
 		'@msg-id=bad_host_rate_exceeded :tmi.twitch.tv NOTICE #local7000 :Host target cannot be changed more than 3 times every half hour.',
 		'@msg-id=usage_host :tmi.twitch.tv NOTICE #local7000 :Usage: "/host " - Host another channel.',
-		no_permission,
+		no_permission
 		// msg_channel_suspended
 	]
 }, {
 	command: 'join',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: 'JOIN #local7000',
 	serverCommand: '@broadcaster-lang=;r9k=0;slow=300;subs-only=0 :tmi.twitch.tv ROOMSTATE #local7000',
 	testTimeout: true
 }, {
 	command: 'leave',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: 'PART',
 	serverCommand(client, ws) {
-		var user = client.getUsername();
+		const user = client.getUsername();
 		ws.send(`:${user}! PART #local7000`);
 	},
 	testTimeout: true
 }, {
 	command: 'mod',
-	inputParams: ['#local7000', 'schmoopiie'],
-	returnedParams: ['#local7000', 'schmoopiie'],
+	inputParams: [ '#local7000', 'schmoopiie' ],
+	returnedParams: [ '#local7000', 'schmoopiie' ],
 	serverTest: '/mod',
 	serverCommand: '@msg-id=mod_success :tmi.twitch.tv NOTICE #local7000 :schmoopiie',
 	errorCommands: [
@@ -141,8 +141,8 @@ var tests = [{
 	]
 }, {
 	command: 'mods',
-	inputParams: ['#local7000'],
-	returnedParams: ['barry', 'baz'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ 'barry', 'baz' ],
 	serverTest: '/mods',
 	serverCommand: '@msg-id=room_mods :tmi.twitch.tv NOTICE #local7000 :The moderators of this room are: barry, baz',
 	errorCommands: [
@@ -150,24 +150,24 @@ var tests = [{
 	]
 }, {
 	command: 'mods',
-	inputParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
 	returnedParams: [],
 	serverTest: '/mods',
 	serverCommand: '@msg-id=no_mods :tmi.twitch.tv NOTICE #local7000 :There are no moderators of this channel.'
 }, {
 	command: 'part',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: 'PART',
 	serverCommand(client, ws) {
-		var user = client.getUsername();
+		const user = client.getUsername();
 		ws.send(`:${user}! PART #local7000`);
 	},
 	testTimeout: true
 }, {
 	command: 'r9kbeta',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/r9kbeta',
 	serverCommand: '@msg-id=r9k_on :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -178,8 +178,8 @@ var tests = [{
 	]
 }, {
 	command: 'r9kbetaoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/r9kbetaoff',
 	serverCommand: '@msg-id=r9k_off :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -190,8 +190,8 @@ var tests = [{
 	]
 }, {
 	command: 'r9kmode',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/r9kbeta',
 	serverCommand: '@msg-id=r9k_on :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -202,8 +202,8 @@ var tests = [{
 	]
 }, {
 	command: 'r9kmodeoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/r9kbetaoff',
 	serverCommand: '@msg-id=r9k_off :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -214,14 +214,14 @@ var tests = [{
 	]
 }, {
 	command: 'raw',
-	inputParams: ['/slowoff'],
-	returnedParams: ['/slowoff'],
+	inputParams: [ '/slowoff' ],
+	returnedParams: [ '/slowoff' ],
 	serverTest: '/slowoff',
 	serverCommand: '@slow=0 :tmi.twitch.tv ROOMSTATE'
 }, {
 	command: 'slow',
-	inputParams: ['#local7000', 150],
-	returnedParams: ['#local7000', 150],
+	inputParams: [ '#local7000', 150 ],
+	returnedParams: [ '#local7000', 150 ],
 	serverTest: '/slow',
 	serverCommand: '@slow=150 :tmi.twitch.tv ROOMSTATE',
 	errorCommands: [
@@ -231,14 +231,14 @@ var tests = [{
 	]
 }, {
 	command: 'slow',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000', 300],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000', 300 ],
 	serverTest: '/slow',
 	serverCommand: '@slow=300 :tmi.twitch.tv ROOMSTATE'
 }, {
 	command: 'slowoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/slowoff',
 	serverCommand: '@slow=0 :tmi.twitch.tv ROOMSTATE',
 	errorCommands: [
@@ -248,8 +248,8 @@ var tests = [{
 	]
 }, {
 	command: 'slowmode',
-	inputParams: ['#local7000', 150],
-	returnedParams: ['#local7000', 150],
+	inputParams: [ '#local7000', 150 ],
+	returnedParams: [ '#local7000', 150 ],
 	serverTest: '/slow',
 	serverCommand: '@slow=150 :tmi.twitch.tv ROOMSTATE',
 	errorCommands: [
@@ -259,14 +259,14 @@ var tests = [{
 	]
 }, {
 	command: 'slowmode',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000', 300],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000', 300 ],
 	serverTest: '/slow',
 	serverCommand: '@slow=300 :tmi.twitch.tv ROOMSTATE'
 }, {
 	command: 'slowmodeoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/slowoff',
 	serverCommand: '@slow=0 :tmi.twitch.tv ROOMSTATE',
 	errorCommands: [
@@ -276,8 +276,8 @@ var tests = [{
 	]
 }, {
 	command: 'subscribers',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/subscribers',
 	serverCommand: '@msg-id=subs_on :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -288,8 +288,8 @@ var tests = [{
 	]
 }, {
 	command: 'subscribersoff',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/subscribersoff',
 	serverCommand: '@msg-id=subs_off :tmi.twitch.tv NOTICE #local7000',
 	errorCommands: [
@@ -300,8 +300,8 @@ var tests = [{
 	]
 }, {
 	command: 'timeout',
-	inputParams: ['#local7000', 'baduser', 9000],
-	returnedParams: ['#local7000', 'baduser', 9000],
+	inputParams: [ '#local7000', 'baduser', 9000 ],
+	returnedParams: [ '#local7000', 'baduser', 9000 ],
 	serverTest: '/timeout',
 	serverCommand: '@msg-id=timeout_success :tmi.twitch.tv NOTICE #local7000 :9000',
 	errorCommands: [
@@ -316,14 +316,14 @@ var tests = [{
 	]
 }, {
 	command: 'timeout',
-	inputParams: ['#local7000', 'baduser'],
-	returnedParams: ['#local7000', 'baduser', 300],
+	inputParams: [ '#local7000', 'baduser' ],
+	returnedParams: [ '#local7000', 'baduser', 300 ],
 	serverTest: '/timeout',
 	serverCommand: '@msg-id=timeout_success :tmi.twitch.tv NOTICE #local7000 :300'
 }, {
 	command: 'unban',
-	inputParams: ['#local7000', 'baduser'],
-	returnedParams: ['#local7000', 'baduser'],
+	inputParams: [ '#local7000', 'baduser' ],
+	returnedParams: [ '#local7000', 'baduser' ],
 	serverTest: '/unban',
 	serverCommand: '@msg-id=unban_success :tmi.twitch.tv NOTICE #local7000 :baduser',
 	errorCommands: [
@@ -334,26 +334,26 @@ var tests = [{
 	]
 }, {
 	command: 'unban',
-	inputParams: ['#local7000', 'baduser'],
-	returnedParams: ['#local7000', 'baduser'],
+	inputParams: [ '#local7000', 'baduser' ],
+	returnedParams: [ '#local7000', 'baduser' ],
 	serverTest: '/unban',
 	serverCommand: '@msg-id=untimeout_success :tmi.twitch.tv NOTICE #local7000 :baduser'
 }, {
 	command: 'unhost',
-	inputParams: ['#local7000'],
-	returnedParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
+	returnedParams: [ '#local7000' ],
 	serverTest: '/unhost',
 	serverCommand: ':tmi.twitch.tv HOSTTARGET #local7000 :- 0',
 	errorCommands: [
 		'@msg-id=not_hosting :tmi.twitch.tv NOTICE #local7000 :No channel is currently being hosted.',
 		'@msg-id=usage_unhost :tmi.twitch.tv NOTICE #local7000 :Usage: "/unhost"',
-		no_permission,
+		no_permission
 		// msg_channel_suspended
 	]
 }, {
 	command: 'unmod',
-	inputParams: ['#local7000', 'moddymcmodface'],
-	returnedParams: ['#local7000', 'moddymcmodface'],
+	inputParams: [ '#local7000', 'moddymcmodface' ],
+	returnedParams: [ '#local7000', 'moddymcmodface' ],
 	serverTest: '/unmod',
 	serverCommand: '@msg-id=unmod_success :tmi.twitch.tv NOTICE #local7000 :moddymcmodface',
 	errorCommands: [
@@ -364,8 +364,8 @@ var tests = [{
 	]
 }, {
 	command: 'vip',
-	inputParams: ['#local7000', 'schmoopiie'],
-	returnedParams: ['#local7000', 'schmoopiie'],
+	inputParams: [ '#local7000', 'schmoopiie' ],
+	returnedParams: [ '#local7000', 'schmoopiie' ],
 	serverTest: '/vip',
 	serverCommand: '@msg-id=vip_success :tmi.twitch.tv NOTICE #local7000 :You have added User as a vip of this channel.',
 	errorCommands: [
@@ -377,8 +377,8 @@ var tests = [{
 	]
 }, {
 	command: 'unvip',
-	inputParams: ['#local7000', 'schmoopiie'],
-	returnedParams: ['#local7000', 'schmoopiie'],
+	inputParams: [ '#local7000', 'schmoopiie' ],
+	returnedParams: [ '#local7000', 'schmoopiie' ],
 	serverTest: '/unvip',
 	serverCommand: '@msg-id=unvip_success :tmi.twitch.tv NOTICE #local7000 :You have removed User as a VIP of this channel..',
 	errorCommands: [
@@ -389,30 +389,31 @@ var tests = [{
 	]
 }, {
 	command: 'vips',
-	inputParams: ['#local7000'],
+	inputParams: [ '#local7000' ],
 	returnedParams: [],
 	serverTest: '/vips',
 	serverCommand: '@msg-id=no_vips :tmi.twitch.tv NOTICE #local7000 :This channel does not have any VIPs.'
 }, {
 	command: 'whisper',
-	inputParams: ['moddymcmodface', 'You got unmodded! D:'],
-	returnedParams: ['moddymcmodface', 'You got unmodded! D:'],
+	inputParams: [ 'moddymcmodface', 'You got unmodded! D:' ],
+	returnedParams: [ 'moddymcmodface', 'You got unmodded! D:' ],
 	serverTest: '/w',
 	serverCommand: ':tmi.twitch.tv WHISPER moddymcmodface :You got unmodded! D:',
 	errorCommands: [
-		no_permission,
+		no_permission
 	]
-}];
+} ];
 
-describe('commands (justinfan)', function() {
+describe('commands (justinfan)', () => {
 	beforeEach(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			connection: {
 				server: 'localhost',
 				port: 7000,
-				timeout: 1
+				timeout: 1,
+				reconnect: false
 			}
 		});
 	});
@@ -424,26 +425,25 @@ describe('commands (justinfan)', function() {
 	});
 
 	it('handles commands when disconnected', function(cb) {
-		this.client.subscribers('local7000').then(noop, function(err) {
+		this.client.subscribers('local7000').then(noop, err => {
 			err.should.eql('Not connected to server.');
 			cb();
 		});
 	});
 
 	it('handles ping', function(cb) {
-		var client = this.client;
-		var server = this.server;
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				if(~message.indexOf('PING')) {
 					ws.send('PONG');
 				}
 			});
 		});
 
-		client.on('logon', function() {
-			client.ping().then(function(latency) {
+		client.on('logon', () => {
+			client.ping().then(latency => {
 				latency.should.be.ok();
 				client.disconnect();
 				cb();
@@ -454,17 +454,16 @@ describe('commands (justinfan)', function() {
 	});
 
 	it('handles ping timeout', function(cb) {
-		var client = this.client;
-		var server = this.server;
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', _message => {
 				ws.send('dummy');
 			});
 		});
 
-		client.on('logon', function() {
-			client.ping().then(noop, function(err) {
+		client.on('logon', () => {
+			client.ping().then(noop, err => {
 				err.should.be.ok();
 				cb();
 			});
@@ -473,16 +472,15 @@ describe('commands (justinfan)', function() {
 		client.connect().catch(catchConnectError);
 	});
 
-	tests.forEach(function(test) {
+	tests.forEach(test => {
 		it(`should handle ${test.command}`, function(cb) {
-			var client = this.client;
-			var server = this.server;
+			const { client, server } = this;
 
-			server.on('connection', function(ws) {
-				ws.on('message', function(message) {
+			server.on('connection', ws => {
+				ws.on('message', message => {
 					// Ensure that the message starts with NICK
 					if(!message.indexOf('NICK')) {
-						var user = client.getUsername();
+						const user = client.getUsername();
 						ws.send(`:${user}! JOIN #local7000`);
 						return;
 					}
@@ -499,8 +497,8 @@ describe('commands (justinfan)', function() {
 			});
 
 			client.on('join', function() {
-				client[test.command].apply(this, test.inputParams).then(function(data) {
-					test.returnedParams.forEach(function(param, index) {
+				client[test.command].apply(this, test.inputParams).then(data => {
+					test.returnedParams.forEach((param, index) => {
 						data[index].should.eql(param);
 					});
 					client.disconnect();
@@ -512,16 +510,15 @@ describe('commands (justinfan)', function() {
 		});
 
 		if(test.errorCommands) {
-			test.errorCommands.forEach(function(error) {
+			test.errorCommands.forEach(error => {
 				it(`should handle ${test.command} errors`, function(cb) {
-					var client = this.client;
-					var server = this.server;
+					const { client, server } = this;
 
-					server.on('connection', function(ws) {
-						ws.on('message', function(message) {
+					server.on('connection', ws => {
+						ws.on('message', message => {
 							// Ensure that the message starts with NICK
 							if(!message.indexOf('NICK')) {
-								var user = client.getUsername();
+								const user = client.getUsername();
 								ws.send(`:${user}! JOIN #local7000`);
 								return;
 							}
@@ -533,7 +530,7 @@ describe('commands (justinfan)', function() {
 					});
 
 					client.on('join', function() {
-						client[test.command].apply(this, test.inputParams).then(noop, function(err) {
+						client[test.command].apply(this, test.inputParams).then(noop, err => {
 							err.should.be.ok();
 							client.disconnect();
 							cb();
@@ -547,11 +544,10 @@ describe('commands (justinfan)', function() {
 
 		if(test.testTimeout) {
 			it(`should handle ${test.command} timeout`, function(cb) {
-				var client = this.client;
-				var server = this.server;
+				const { client, server } = this;
 
-				server.on('connection', function(ws) {
-					ws.on('message', function(message) {
+				server.on('connection', ws => {
+					ws.on('message', message => {
 						// Ensure that the message starts with NICK
 						if(!message.indexOf('NICK')) {
 							ws.send('dummy');
@@ -561,7 +557,7 @@ describe('commands (justinfan)', function() {
 				});
 
 				client.on('logon', function() {
-					client[test.command].apply(this, test.inputParams).then(noop, function(err) {
+					client[test.command].apply(this, test.inputParams).then(noop, err => {
 						err.should.be.ok();
 						client.disconnect();
 						cb();
@@ -574,10 +570,10 @@ describe('commands (justinfan)', function() {
 	});
 });
 
-describe('commands (identity)', function() {
+describe('commands (identity)', () => {
 	beforeEach(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			connection: {
 				server: 'localhost',
@@ -595,20 +591,19 @@ describe('commands (identity)', function() {
 		this.client = null;
 	});
 
-	it(`should handle action`, function(cb) {
-		var client = this.client;
-		var server = this.server;
+	it('should handle action', function(cb) {
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				if(~message.indexOf('Hello')) {
 					ws.send(':tmi.twitch.tv PRIVMSG #local7000 :\u0001ACTION Hello :)\u0001');
 				}
 			});
 		});
 
-		client.on('logon', function() {
-			client.action('#local7000', 'Hello').then(function (data) {
+		client.on('logon', () => {
+			client.action('#local7000', 'Hello').then(data => {
 				data[0].should.eql('#local7000');
 				data[1].should.eql('\u0001ACTION Hello\u0001');
 				client.disconnect();
@@ -619,20 +614,19 @@ describe('commands (identity)', function() {
 		client.connect().catch(catchConnectError);
 	});
 
-	it(`should handle say`, function(cb) {
-		var client = this.client;
-		var server = this.server;
+	it('should handle say', function(cb) {
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				if(~message.indexOf('Hello')) {
 					ws.send(':tmi.twitch.tv PRIVMSG #local7000 :Hello');
 				}
 			});
 		});
 
-		client.on('logon', function() {
-			client.say('#local7000', 'Hello').then(function (data) {
+		client.on('logon', () => {
+			client.say('#local7000', 'Hello').then(data => {
 				data[0].should.eql('#local7000');
 				data[1].should.eql('Hello');
 				client.disconnect();
@@ -643,28 +637,27 @@ describe('commands (identity)', function() {
 		client.connect().catch(catchConnectError);
 	});
 
-	it(`should handle say when disconnected`, function(cb) {
-		this.client.say('#local7000', 'Hello!').then(noop, function(err) {
+	it('should handle say when disconnected', function(cb) {
+		this.client.say('#local7000', 'Hello!').then(noop, err => {
 			err.should.eql('Not connected to server.');
 			cb();
 		});
 	});
 
-	it(`should break up long messages (> 500 characters)`, function(cb) {
-		var client = this.client;
-		var server = this.server;
-		var lorem = 'lorem '.repeat(89) + 'ipsum';
-		var calls = 0;
+	it('should break up long messages (> 500 characters)', function(cb) {
+		const { client, server } = this;
+		const lorem = 'lorem '.repeat(89) + 'ipsum';
+		let calls = 0;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				if(~message.indexOf('PRIVMSG')) {
 					ws.send(`:tmi.twitch.tv PRIVMSG #local7000 :${message.split(':')[1]}`);
 				}
 			});
 		});
 
-		client.on('chat', function(channel, user, message) {
+		client.on('chat', (channel, user, message) => {
 			calls++;
 			if(calls > 1) {
 				message.should.containEql('ipsum');
@@ -673,28 +666,27 @@ describe('commands (identity)', function() {
 			}
 		});
 
-		client.on('logon', function() {
+		client.on('logon', () => {
 			client.say('#local7000', lorem);
 		});
 
 		client.connect().catch(catchConnectError);
 	});
 
-	it(`should break up long messages without spaces (> 500 characters)`, function(cb) {
-		var client = this.client;
-		var server = this.server;
-		var lorem = 'lorem'.repeat(100) + 'ipsum';
-		var calls = 0;
+	it('should break up long messages without spaces (> 500 characters)', function(cb) {
+		const { client, server } = this;
+		const lorem = 'lorem'.repeat(100) + 'ipsum';
+		let calls = 0;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				if(~message.indexOf('PRIVMSG')) {
 					ws.send(`:tmi.twitch.tv PRIVMSG #local7000 :${message.split(':')[1]}`);
 				}
 			});
 		});
 
-		client.on('chat', function(channel, user, message) {
+		client.on('chat', (channel, user, message) => {
 			calls++;
 			if(calls > 1) {
 				message.should.containEql('ipsum');
@@ -703,28 +695,27 @@ describe('commands (identity)', function() {
 			}
 		});
 
-		client.on('logon', function() {
+		client.on('logon', () => {
 			client.say('#local7000', lorem);
 		});
 
 		client.connect().catch(catchConnectError);
 	});
 
-	['/me', '\\me', '.me'].forEach(function(me) {
+	[ '/me', '\\me', '.me' ].forEach(me => {
 		it(`should handle ${me} say`, function(cb) {
-			var client = this.client;
-			var server = this.server;
+			const { client, server } = this;
 
-			server.on('connection', function(ws) {
-				ws.on('message', function(message) {
+			server.on('connection', ws => {
+				ws.on('message', message => {
 					if(~message.indexOf('Hello')) {
 						ws.send(':tmi.twitch.tv PRIVMSG #local7000 :Hello');
 					}
 				});
 			});
 
-			client.on('logon', function() {
-				client.say('#local7000', `${me} Hello`).then(function (data) {
+			client.on('logon', () => {
+				client.say('#local7000', `${me} Hello`).then(data => {
 					data[0].should.eql('#local7000');
 					data[1].should.eql('\u0001ACTION Hello\u0001');
 					client.disconnect();
@@ -736,12 +727,12 @@ describe('commands (identity)', function() {
 		});
 	});
 
-	['.', '/', '\\'].forEach(function(prefix) {
+	[ '.', '/', '\\' ].forEach(prefix => {
 		it(`should handle ${prefix} say`, function(cb) {
-			var client = this.client;
+			const { client } = this;
 
-			client.on('logon', function() {
-				client.say('#local7000', `${prefix}FOO`).then(function (data) {
+			client.on('logon', () => {
+				client.say('#local7000', `${prefix}FOO`).then(data => {
 					data[0].should.eql('#local7000');
 					data.length.should.eql(2);
 					client.disconnect();
@@ -753,12 +744,12 @@ describe('commands (identity)', function() {
 		});
 	});
 
-	['..'].forEach(function(prefix) {
+	[ '..' ].forEach(prefix => {
 		it(`should handle ${prefix}message say`, function(cb) {
-			var client = this.client;
+			const { client } = this;
 
-			client.on('logon', function() {
-				client.say('#local7000', `${prefix}FOO`).then(function (data) {
+			client.on('logon', () => {
+				client.say('#local7000', `${prefix}FOO`).then(data => {
 					data[0].should.eql('#local7000');
 					data[1].should.eql(`${prefix}FOO`);
 					data.length.should.eql(2);

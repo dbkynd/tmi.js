@@ -1,16 +1,16 @@
-var WebSocketServer = require('ws').Server;
-var tmi = require('../index.js');
+const WebSocketServer = require('ws').Server;
+const tmi = require('../index.js');
 
-var catchConnectError = err => {
+const catchConnectError = err => {
 	if(err !== 'Connection closed.') {
 		console.error(err);
 	}
 };
 
-describe('websockets', function() {
+describe('websockets', () => {
 	before(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			connection: {
 				server: 'localhost',
@@ -20,26 +20,25 @@ describe('websockets', function() {
 	});
 
 	it('handles join & part commands', function(cb) {
-		var client = this.client;
-		var server = this.server;
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
-			ws.on('message', function(message) {
+		server.on('connection', ws => {
+			ws.on('message', message => {
 				// Ensure that the message starts with NICK
 				if(message.indexOf('NICK')) {
 					return;
 				}
-				var user = client.getUsername();
+				const user = client.getUsername();
 				ws.send(`:${user}! JOIN #local7000`);
 				ws.send(`:${user}! PART #local7000`);
 			});
 		});
 
-		client.on('join', function() {
-			client.channels.should.eql(['#local7000']);
+		client.on('join', () => {
+			client.channels.should.eql([ '#local7000' ]);
 		});
 
-		client.on('part', function() {
+		client.on('part', () => {
 			client.channels.should.eql([]);
 			client.disconnect();
 			cb();
@@ -54,10 +53,10 @@ describe('websockets', function() {
 	});
 });
 
-describe('server crashed, with reconnect: false (default)', function() {
+describe('server crashed, with reconnect: true (default)', () => {
 	before(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			connection: {
 				server: 'localhost',
@@ -66,53 +65,51 @@ describe('server crashed, with reconnect: false (default)', function() {
 		});
 	});
 
-	it('gracefully handle the error', function(cb) {
+	it('attempt to reconnect', function(cb) {
 		this.timeout(15000);
-		var client = this.client;
-		var server = this.server;
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
+		server.on('connection', _ws => {
 			// Uh-oh, the server dies
 			server.close();
 		});
 
-		client.on('disconnected', function() {
-			'Test that we reached this point'.should.be.ok();
-			cb();
+		client.on('disconnected', () => {
+			setTimeout(() => {
+				'Test that we reached this point'.should.be.ok();
+				cb();
+			}, client.reconnectTimer);
 		});
 
 		client.connect().catch(catchConnectError);
 	});
 });
 
-describe('server crashed, with reconnect: true', function() {
+describe('server crashed, with reconnect: false', () => {
 	before(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			connection: {
 				server: 'localhost',
 				port: 7000,
-				reconnect: true
+				reconnect: false
 			}
 		});
 	});
 
-	it('attempt to reconnect', function(cb) {
+	it('gracefully handle the error', function(cb) {
 		this.timeout(15000);
-		var client = this.client;
-		var server = this.server;
+		const { client, server } = this;
 
-		server.on('connection', function(ws) {
+		server.on('connection', _ws => {
 			// Uh-oh, the server dies
 			server.close();
 		});
 
-		client.on('disconnected', function() {
-			setTimeout(function() {
-				'Test that we reached this point'.should.be.ok();
-				cb();
-			}, client.reconnectTimer);
+		client.on('disconnected', () => {
+			'Test that we reached this point'.should.be.ok();
+			cb();
 		});
 
 		client.connect().catch(catchConnectError);

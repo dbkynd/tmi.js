@@ -1,6 +1,6 @@
-var tmi = require('../index.js');
+const tmi = require('../index.js');
 
-var tests = [
+const tests = [
 	'FOO',
 	':tmi.twitch.tv FOO',
 	':tmi.twitch.tv NOTICE #schmoopiie : FOO',
@@ -8,10 +8,10 @@ var tests = [
 	':schmoopiie!schmoopiie@schmoopiie.tmi.twitch.tv FOO'
 ];
 
-describe('invalid server events', function() {
-	tests.forEach(function(test) {
-		it(`treat "${test}" as invalid`, function() {
-			var client = new tmi.client({
+describe('invalid server events', () => {
+	tests.forEach(test => {
+		it(`treat "${test}" as invalid`, () => {
+			const client = new tmi.client({
 				logger: {
 					warn(message) {
 						message.includes('Could not parse').should.be.ok;
@@ -19,7 +19,7 @@ describe('invalid server events', function() {
 				}
 			});
 
-			client._onMessage({data: test});
+			client._onMessage({ data: test });
 		});
 	});
 });

@@ -1,7 +1,7 @@
-var should = require('should');
-var tmi = require('../index.js');
+const should = require('should');
+const tmi = require('../index.js');
 
-var events = [{
+const events = [ {
 	name: 'action',
 	data: '@badges=broadcaster/1,warcraft/horde;color=#0D4200;display-name=Schmoopiie;emotes=25:0-4,12-16/1902:6-10;subscriber=0;turbo=1;user-type=global_mod :schmoopiie!~schmoopiie@schmoopiie.tmi.twitch.tv PRIVMSG #schmoopiie :\u0001ACTION Hello :)\u0001',
 	expected: [
@@ -11,8 +11,8 @@ var events = [{
 			color: '#0D4200',
 			'display-name': 'Schmoopiie',
 			emotes: {
-				'25': ['0-4', '12-16'],
-				'1902': ['6-10']
+				'25': [ '0-4', '12-16' ],
+				'1902': [ '6-10' ]
 			},
 			subscriber: false,
 			turbo: true,
@@ -135,12 +135,28 @@ var events = [{
 	]
 }, {
 	name: 'connected',
-	data: ':tmi.twitch.tv 372 schmoopiie :You are in a maze of twisty passages, all alike.'
+	data: ':tmi.twitch.tv 376 schmoopiie :>'
 }, {
 	name: 'emotesets',
 	data: '@color=#1E90FF;display-name=Schmoopiie;emote-sets=0;turbo=0;user-type= :tmi.twitch.tv GLOBALUSERSTATE',
 	expected: [
 		'0'
+	]
+}, {
+	name: 'globaluserstate',
+	data: '@badge-info=;badges=glitchcon2020/1;color=#177DE3;display-name=Alca;emote-sets=0;user-id=7676884;user-type= :tmi.twitch.tv GLOBALUSERSTATE',
+	expected: [
+		{
+			'badge-info': null,
+			'badge-info-raw': null,
+			badges: { glitchcon2020: '1' },
+			'badges-raw': 'glitchcon2020/1',
+			color: '#177DE3',
+			'display-name': 'Alca',
+			'emote-sets': '0',
+			'user-id': '7676884',
+			'user-type': null
+		}
 	]
 }, {
 	name: 'hosted',
@@ -178,7 +194,7 @@ var events = [{
 	data: '@msg-id=room_mods :tmi.twitch.tv NOTICE #schmoopiie :The moderators of this room are: user1, user2, user3',
 	expected: [
 		'#schmoopiie',
-		['user1', 'user2', 'user3']
+		[ 'user1', 'user2', 'user3' ]
 	]
 }, {
 	name: 'mods',
@@ -437,7 +453,7 @@ var events = [{
 	]
 }, {
 	name: 'anongiftpaidupgrade',
-	data: '@badge-info=subscriber/1;badges=vip/1,subscriber/0,premium/1;color=#D2691E;display-name=SubscriberName;emotes=;flags=;id=00000000-0000-0000-0000-000000000000;login=subscribername;mod=0;msg-id=anongiftpaidupgrade;room-id=123456789;subscriber=1;system-msg=SubscriberName\sis\scontinuing\sthe\sGift\sSub\sthey\sgot\sfrom\san\sanonymous\suser!;tmi-sent-ts=1590000000000;user-id=987654321;user-type= :tmi.twitch.tv USERNOTICE #channelname',
+	data: '@badge-info=subscriber/1;badges=vip/1,subscriber/0,premium/1;color=#D2691E;display-name=SubscriberName;emotes=;flags=;id=00000000-0000-0000-0000-000000000000;login=subscribername;mod=0;msg-id=anongiftpaidupgrade;room-id=123456789;subscriber=1;system-msg=SubscriberName\\sis\\scontinuing\\sthe\\sGift\\sSub\\sthey\\sgot\\sfrom\\san\\sanonymous\\suser!;tmi-sent-ts=1590000000000;user-id=987654321;user-type= :tmi.twitch.tv USERNOTICE #channelname',
 	expected: [
 		// channel, username, userstate
 		'#channelname',
@@ -465,7 +481,7 @@ var events = [{
 			'msg-id': 'anongiftpaidupgrade',
 			'room-id': '123456789',
 			subscriber: true,
-			'system-msg': 'SubscriberNamesisscontinuingsthesGiftsSubstheysgotsfromsansanonymoussuser!',
+			'system-msg': 'SubscriberName is continuing the Gift Sub they got from an anonymous user!',
 			'tmi-sent-ts': '1590000000000',
 			'user-id': '987654321',
 			'user-type': null
@@ -580,7 +596,7 @@ var events = [{
 			'user-type': null,
 			'emotes-raw': '64138:0-8',
 			'badge-info-raw': null,
-			'badges-raw': null,
+			'badges-raw': null
 		},
 		'SeemsGood'
 	]
@@ -612,7 +628,7 @@ var events = [{
 			'user-type': null,
 			'emotes-raw': '64138:0-8',
 			'badge-info-raw': null,
-			'badges-raw': null,
+			'badges-raw': null
 		},
 		'SeemsGood'
 	]
@@ -705,19 +721,17 @@ var events = [{
 		},
 		'test123'
 	]
-}];
+} ];
 
-describe('client events', function() {
-	events.forEach(function(e) {
-		var name = e.name;
-		var data = e.data;
-		var expected = e.expected;
-		it(`emit ${name}`, function(cb) {
-			var client = new tmi.client();
+describe('client events', () => {
+	events.forEach(e => {
+		const { name, data, expected } = e;
+		it(`emit ${name}`, cb => {
+			const client = new tmi.client();
 
-			client.on(name, function(...args) {
+			client.on(name, (...args) => {
 				'Reach this callback'.should.be.ok();
-				expected && expected.forEach(function(data, index) {
+				expected && expected.forEach((data, index) => {
 					if(data === null) {
 						should.not.exist(args[index]);
 					}
@@ -728,14 +742,14 @@ describe('client events', function() {
 				cb();
 			});
 
-			client._onMessage({data: data});
+			client._onMessage({ data: data });
 		});
 	});
 
-	it('emits disconnected', function(cb) {
-		var client = new tmi.client();
+	it('emits disconnected', cb => {
+		const client = new tmi.client();
 
-		client.on('disconnected', function(reason) {
+		client.on('disconnected', reason => {
 			reason.should.be.exactly('Connection closed.').and.be.a.String();
 			cb();
 		});

@@ -1,23 +1,23 @@
-var WebSocketServer = require('ws').Server;
-var tmi = require('../index.js');
+const WebSocketServer = require('ws').Server;
+const tmi = require('../index.js');
 
-var noop = function() {};
-var catchConnectError = err => {
-	if(!['Connection closed.', 'Login unsuccessful.', 'Error logging in.', 'Invalid NICK.'].includes(err)) {
+const noop = function() {};
+const catchConnectError = err => {
+	if(![ 'Connection closed.', 'Login unsuccessful.', 'Error logging in.', 'Invalid NICK.' ].includes(err)) {
 		console.error(err);
 	}
 };
 
-var tests = [
+const tests = [
 	':tmi.twitch.tv NOTICE #schmoopiie :Login unsuccessful.',
 	':tmi.twitch.tv NOTICE #schmoopiie :Error logging in.',
 	':tmi.twitch.tv NOTICE #schmoopiie :Invalid NICK.'
 ];
 
-describe('handling authentication', function() {
+describe('handling authentication', () => {
 	beforeEach(function() {
 		// Initialize websocket server
-		this.server = new WebSocketServer({port: 7000});
+		this.server = new WebSocketServer({ port: 7000 });
 		this.client = new tmi.client({
 			logger: {
 				error: noop,
@@ -37,23 +37,22 @@ describe('handling authentication', function() {
 		this.client = null;
 	});
 
-	tests.forEach(function(test) {
+	tests.forEach(test => {
 		it(`handle ${test}`, function(cb) {
-			var client = this.client;
-			var server = this.server;
+			const { client, server } = this;
 
-			var parts = test.split(':');
-			var message = parts[parts.length - 1].trim();
+			const parts = test.split(':');
+			const message = parts[parts.length - 1].trim();
 
-			server.on('connection', function(ws) {
-				ws.on('message', function(message) {
+			server.on('connection', ws => {
+				ws.on('message', message => {
 					if(!message.indexOf('NICK')) {
 						ws.send(test);
 					}
 				});
 			});
 
-			client.on('disconnected', function(reason) {
+			client.on('disconnected', reason => {
 				reason.should.eql(message);
 				cb();
 			});

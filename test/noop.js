@@ -1,11 +1,11 @@
-var tmi = require('../index.js');
+const tmi = require('../index.js');
 
-var tests = [
+const tests = [
 	':tmi.twitch.tv 002',
 	':tmi.twitch.tv 003',
 	':tmi.twitch.tv 004',
 	':tmi.twitch.tv 375',
-	':tmi.twitch.tv 376',
+	':tmi.twitch.tv 372 schmoopiie :You are in a maze of twisty passages.',
 	':tmi.twitch.tv CAP',
 	'@msg-id=host_on :tmi.twitch.tv NOTICE #schmoopiie',
 	'@msg-id=host_off :tmi.twitch.tv NOTICE #schmoopiie',
@@ -14,14 +14,14 @@ var tests = [
 	':schmoopiie!schmoopiie@schmoopiie.tmi.twitch.tv 366'
 ];
 
-describe('no-op server events', function() {
-	tests.forEach(function(test) {
-		it(`treat "${test}" as a no-op`, function() {
-			var stopTest = function() {
+describe('no-op server events', () => {
+	tests.forEach(test => {
+		it(`treat "${test}" as a no-op`, () => {
+			const stopTest = function() {
 				'Should not call this'.should.not.be.ok();
 			};
 
-			var client = new tmi.client({
+			const client = new tmi.client({
 				logger: {
 					trace: stopTest,
 					debug: stopTest,
@@ -32,7 +32,7 @@ describe('no-op server events', function() {
 				}
 			});
 
-			client._onMessage({data: test});
+			client._onMessage({ data: test });
 		});
 	});
 });
